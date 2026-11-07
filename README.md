@@ -113,7 +113,7 @@ The two `depgraph_*.log.txt` logs were written by an earlier revision of `edgene
 
 ## Citation
 
-Y. S. Kumari, H. P. Kumar, M. Yagneshwar, K. M. Shanthan, "Coupling-Aware Gated Structured Pruning of EdgeNeXt for Deployment on Low-Cost Edge Devices", submitted to the Journal of Systems Architecture, 2026. The full reference will be added once the paper is published.
+Y. S. Kumari, Hari Prabhat Kumar, M. Yagneshwar, K. M. Shanthan, "Coupling-Aware Gated Structured Pruning of EdgeNeXt for Deployment on Low-Cost Edge Devices", submitted to the Journal of Systems Architecture, 2026. The full reference will be added once the paper is published.
 
 ## License
 
