@@ -1,0 +1,6 @@
+torch>=2.4
+torchvision
+timm==1.0.30
+torch-pruning==1.6.1
+numpy
+pillow

@@ -1,0 +1,10 @@
+torch==2.14.1
+torchvision==0.29.1
+timm==1.0.30
+onnx==1.23.2
+onnxruntime==1.29.0
+ai-edge-litert==2.3.0
+litert-torch==0.10.0
+ai-edge-quantizer==0.10.0
+numpy
+pillow
