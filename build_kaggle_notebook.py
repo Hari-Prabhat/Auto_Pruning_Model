@@ -1,17 +1,17 @@
-"""build_kaggle_notebook.py - writes notebooks/edgenext_kaggle.ipynb, the notebook
+"""build_kaggle_notebook.py - writes edgenext_kaggle.ipynb, the notebook
 used to train and package every model of the paper on a Kaggle GPU.
 
 The notebook embeds the current edgenext_bench.py and edgenext_gated_prune.py
 (%%writefile cells), so rebuild it after changing either script:
     pip install nbformat
-    python notebooks/build_kaggle_notebook.py
-    PRESET_DATASET=tiny200 PRESET_SEEDS="[0]" OUT_NAME=t200_s0.ipynb python notebooks/build_kaggle_notebook.py
+    python build_kaggle_notebook.py
+    PRESET_DATASET=tiny200 PRESET_SEEDS="[0]" OUT_NAME=t200_s0.ipynb python build_kaggle_notebook.py
 """
 import nbformat as nbf, os, sys
 PRESET_DATASET = os.environ.get("PRESET_DATASET", "cifar10")
 PRESET_SEEDS = os.environ.get("PRESET_SEEDS", "[0]")
 OUT_NAME = os.environ.get("OUT_NAME", os.path.join(os.path.dirname(os.path.abspath(__file__)), "edgenext_kaggle.ipynb"))
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+ROOT = os.path.dirname(os.path.abspath(__file__))
 B = open(os.path.join(ROOT, "edgenext_bench.py")).read()
 P = open(os.path.join(ROOT, "edgenext_gated_prune.py")).read()
 md = nbf.v4.new_markdown_cell

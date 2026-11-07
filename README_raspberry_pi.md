@@ -1,13 +1,13 @@
 # Raspberry Pi 3B+ measurements
 
-These are the scripts that were run on the Raspberry Pi 3 Model B+ (64-bit Raspberry Pi OS, no heatsink or fan) for the paper. Each one measures the device packages built by `edgenext_bench.py export` (see `scripts/run_experiment.sh`). Each package holds the pruned and the unpruned model in three formats: ONNX, LiteRT FP32 and LiteRT INT8. It also contains the evaluation images, a manifest with checksums, and its own copy of `edgenext_bench.py`.
+These are the scripts that were run on the Raspberry Pi 3 Model B+ (64-bit Raspberry Pi OS, no heatsink or fan) for the paper. Each one measures the device packages built by `edgenext_bench.py export` (see `run_experiment.sh`). Each package holds the pruned and the unpruned model in three formats: ONNX, LiteRT FP32 and LiteRT INT8. It also contains the evaluation images, a manifest with checksums, and its own copy of `edgenext_bench.py`.
 
 | Script | What it measures | Output to send back |
 |---|---|---|
 | `run_pi_bench.sh` | Accuracy on about 1,000 class-balanced test images, batch-1 latency, 60 s sustained throughput, peak RAM, model load time and first-inference time. Each runtime is measured separately, after the CPU has cooled below 50 °C. | `pi_results_<label>_<date>.zip` |
 | `run_pi_latency_reps.sh` | Latency only, in 5 independent sessions per package and runtime, each started below 50 °C. The paper reports the median of these 5 sessions. | `pi_latreps_<label>_<date>.zip` |
-| `int8_diagnostic/run_int8_diag.sh` | Runs the same CIFAR-100 INT8 models with XNNPACK (4 and 1 threads), the built-in kernels and the TFLite reference kernels, so the Pi's predictions can be compared with a PC. | `pi_int8diag_<date>.zip` |
-| `legacy/run_pi_bench_v1.sh` | First version of `run_pi_bench.sh`, which measured all runtimes in one go without cool-down. It was used only for the first CIFAR-10 seed-0 session; `run_pi_bench.sh` moves results of this version to `results_superseded/`. | `pi_results_<label>_<date>.zip` |
+| `run_int8_diag.sh` (with `int8_diag.py`) | Runs the same CIFAR-100 INT8 models with XNNPACK (4 and 1 threads), the built-in kernels and the TFLite reference kernels, so the Pi's predictions can be compared with a PC. | `pi_int8diag_<date>.zip` |
+| `run_pi_bench_v1.sh` | First version of `run_pi_bench.sh`, which measured all runtimes in one go without cool-down. It was used only for the first CIFAR-10 seed-0 session; `run_pi_bench.sh` moves results of this version to `results_superseded/`. | `pi_results_<label>_<date>.zip` |
 
 ## How to run
 
@@ -24,7 +24,7 @@ All sessions used device label `rpi3bplus`, Python 3.13.5, numpy 2.5.4, ONNX Run
 
 | Date (IST) | Script | Packages |
 |---|---|---|
-| 25 Oct 2026, 14:08 | `legacy/run_pi_bench_v1.sh` | CIFAR-10 seed 0 (gated, DepGraph) |
+| 25 Oct 2026, 14:08 | `run_pi_bench_v1.sh` | CIFAR-10 seed 0 (gated, DepGraph) |
 | 25 Oct 2026, 18:56 | `run_pi_bench.sh` | CIFAR-10 seeds 1–2 (gated, DepGraph) |
 | 26 Oct 2026, 07:15 | `run_pi_latency_reps.sh` | CIFAR-10 seeds 1–2 |
 | 26 Oct 2026, 09:21 | `run_pi_bench.sh` | CIFAR-100 seeds 0–2 |

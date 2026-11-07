@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -u
 KIT="$(cd "$(dirname "$0")" && pwd)"
 STAMP="$(date +%Y%m%d-%H%M%S)"

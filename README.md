@@ -3,22 +3,23 @@
 This repository holds the code for training, pruning, packaging and on-device measurement of the pruned EdgeNeXt-XXS models in the paper. It covers CIFAR-10, CIFAR-100 and Tiny-ImageNet-200, three seeds each, at 50% of the unpruned MACs, measured on a Raspberry Pi 3B+.
 
 - **Proposed method:** hard-concrete gates on the coupled channel groups of EdgeNeXt (residual trunks, the SDTA split–cascade, XCA heads and MLP hidden units). They are trained under an augmented-Lagrangian constraint on the exact MAC count of the exported network, rounded to widths that are multiples of 8, and exported as a standard dense timm EdgeNeXt.
-- **Baselines:** the unpruned model, and DepGraph (Torch-Pruning 1.6.1) restricted to the layers it can prune on EdgeNeXt. Unrestricted, it raises an `IndexError`; see `evidence/`.
+- **Baselines:** the unpruned model, and DepGraph (Torch-Pruning 1.6.1) restricted to the layers it can prune on EdgeNeXt. Unrestricted, it raises an `IndexError`; see the two `depgraph_*.log.txt` files.
 - **Deployment:** ONNX Runtime, LiteRT FP32 and LiteRT INT8 on a Raspberry Pi 3B+.
 
 ## Repository layout
 
-| Path | Purpose |
+| File | Purpose |
 |---|---|
 | `edgenext_gated_prune.py` | Training: `baseline` (unpruned), `gated` (proposed), `depgraph` (baseline) and `check` (self-test, no data needed). Writes `model.pt` and `log.json` per run. |
 | `edgenext_bench.py` | `export` packages a pruned and an unpruned model for ONNX, LiteRT FP32 and LiteRT INT8, with checksums, MACs and numerical checks. `bench` measures on a device; `report` and `summary` combine the results; `depgraph-repro` logs the DepGraph failure. |
-| `scripts/run_experiment.sh` | Trains all three methods and builds the device packages for one dataset and the given seeds. |
-| `scripts/get_tiny_imagenet.sh` | Downloads Tiny-ImageNet-200 into `./data`. |
-| `scripts/reproduce_paper.sh` | Runs every experiment of the paper in order. |
-| `notebooks/edgenext_kaggle.ipynb` | The Kaggle GPU notebook used for the paper's training runs. `build_kaggle_notebook.py` rebuilds it from the two scripts. |
-| `raspberry_pi/` | Scripts run on the Raspberry Pi 3B+, with a record of each session; see `raspberry_pi/README.md`. |
-| `figures/fig3_*.py` … `fig9_*.py` | One script per result figure of the paper (Figures 3–9), drawn from the measured values. Run e.g. `python figures/fig6_pi_speedup.py`; output goes to `figures/out/`. |
-| `evidence/` | Torch-Pruning 1.6.1 failure logs on timm EdgeNeXt-XXS and EdgeNeXt-S. |
+| `run_experiment.sh` | Trains all three methods and builds the device packages for one dataset and the given seeds. |
+| `get_tiny_imagenet.sh` | Downloads Tiny-ImageNet-200 into `./data`. |
+| `reproduce_paper.sh` | Runs every experiment of the paper in order. |
+| `edgenext_kaggle.ipynb` | The Kaggle GPU notebook used for the paper's training runs. `build_kaggle_notebook.py` rebuilds it from the two scripts. |
+| `run_pi_bench.sh`, `run_pi_latency_reps.sh`, `run_int8_diag.sh`, `int8_diag.py`, `run_pi_bench_v1.sh` | Scripts run on the Raspberry Pi 3B+, with a record of each session; see `README_raspberry_pi.md`. |
+| `fig3_*.py` … `fig9_*.py` | One script per result figure of the paper (Figures 3–9), drawn from the measured values. Run e.g. `python fig6_pi_speedup.py`; output goes to `figures/out/`. |
+| `depgraph_edgenext_xx_small.log.txt`, `depgraph_edgenext_small.log.txt` | Torch-Pruning 1.6.1 failure logs on timm EdgeNeXt-XXS and EdgeNeXt-S. |
+| `requirements-train.txt`, `requirements-export.txt`, `requirements-pi.txt` | Python packages for training, for packaging, and for the Raspberry Pi. |
 
 `edgenext_gated_prune.py` imports `edgenext_bench.py`, so keep both in the same folder.
 
@@ -47,13 +48,13 @@ Each command trains the unpruned baseline, the gated model and the DepGraph base
 
 ```bash
 # CIFAR-10 and CIFAR-100 (downloaded automatically into ./data)
-EXPORT_PY=.venv-export/bin/python bash scripts/run_experiment.sh cifar10  0 1 2
-EXPORT_PY=.venv-export/bin/python bash scripts/run_experiment.sh cifar100 0 1 2
+EXPORT_PY=.venv-export/bin/python bash run_experiment.sh cifar10  0 1 2
+EXPORT_PY=.venv-export/bin/python bash run_experiment.sh cifar100 0 1 2
 
 # Tiny-ImageNet-200
-bash scripts/get_tiny_imagenet.sh
+bash get_tiny_imagenet.sh
 EXPORT_PY=.venv-export/bin/python DATA_ROOT=./data/tiny-imagenet-200 \
-    bash scripts/run_experiment.sh tiny200 0 1 2
+    bash run_experiment.sh tiny200 0 1 2
 ```
 
 Add `DRY_RUN=1` to print the commands without running them. The underlying commands for one run (CIFAR-10, seed 0) are:
@@ -76,11 +77,11 @@ Use `--dataset cifar100` (folder prefix `c100_xxs`) or `--dataset tiny200 --data
 - **Fine-tuning:** 10 epochs, SGD with cosine decay.
 - **Batch size:** 32 for CIFAR, 64 for Tiny-ImageNet-200.
 
-The paper's runs were made with `notebooks/edgenext_kaggle.ipynb` on a Kaggle GPU. To use it, upload it to Kaggle, set `DATASET` and `SEEDS` in cell 1, turn on the GPU and internet, then choose *Save & Run All*. It runs the same commands as `scripts/run_experiment.sh`.
+The paper's runs were made with `edgenext_kaggle.ipynb` on a Kaggle GPU. To use it, upload it to Kaggle, set `DATASET` and `SEEDS` in cell 1, turn on the GPU and internet, then choose *Save & Run All*. It runs the same commands as `run_experiment.sh`.
 
 ## Measuring on the Raspberry Pi
 
-Copy `artifacts/*.zip` to the Pi and follow `raspberry_pi/README.md`. When the result zips come back, unpack each package's `results/` folder into `artifacts/<package>/results/`, then combine everything:
+Copy `artifacts/*.zip` to the Pi and follow `README_raspberry_pi.md`. When the result zips come back, unpack each package's `results/` folder into `artifacts/<package>/results/`, then combine everything:
 
 ```bash
 python edgenext_bench.py report  --results "artifacts/c10_xxs_gated_b50_s0/results/*.json" --out reports/c10_xxs_gated_b50_s0
@@ -95,7 +96,7 @@ python edgenext_bench.py depgraph-repro --arch edgenext_xx_small --patch-xca --o
 python edgenext_bench.py depgraph-repro --arch edgenext_small --out evidence/rerun/depgraph_s.log
 ```
 
-The logs in `evidence/` were written by an earlier revision of `edgenext_bench.py`, so the line numbers in their tracebacks differ from the current file. The error comes from inside Torch-Pruning and is the same: `index 48 is out of bounds for dimension 0 with size 48` for XXS, and 96 for S.
+The two `depgraph_*.log.txt` logs were written by an earlier revision of `edgenext_bench.py`, so the line numbers in their tracebacks differ from the current file. The error comes from inside Torch-Pruning and is the same: `index 48 is out of bounds for dimension 0 with size 48` for XXS, and 96 for S.
 
 ## Software versions used in the paper
 
@@ -112,6 +113,8 @@ The logs in `evidence/` were written by an earlier revision of `edgenext_bench.p
 
 ## Citation
 
+Y. S. Kumari, H. P. Kumar, M. Yagneshwar, K. M. Shanthan, "Coupling-Aware Gated Structured Pruning of EdgeNeXt for Deployment on Low-Cost Edge Devices", submitted to the Journal of Systems Architecture, 2026. The full reference will be added once the paper is published.
 
 ## License
 
+MIT License; see `LICENSE`.

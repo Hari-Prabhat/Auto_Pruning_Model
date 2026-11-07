@@ -1,5 +1,6 @@
+#!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "$0")/.." || exit 1
+cd "$(dirname "$0")" || exit 1
 DEST="${1:-./data}"
 mkdir -p "$DEST"
 if [ -f "$DEST/tiny-imagenet-200/wnids.txt" ]; then

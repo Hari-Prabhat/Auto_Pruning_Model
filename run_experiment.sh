@@ -1,5 +1,6 @@
+#!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "$0")/.." || exit 1
+cd "$(dirname "$0")" || exit 1
 ROOT="$(pwd)"
 
 DATASET="${1:-}"
@@ -9,7 +10,7 @@ case "$DATASET" in
   cifar10)  DS=c10;  EXPORT_EXTRA="--download"; TRAIN_EXTRA="--download" ;;
   cifar100) DS=c100; EXPORT_EXTRA="--download"; TRAIN_EXTRA="--download" ;;
   tiny200)  DS=t200; EXPORT_EXTRA="";           TRAIN_EXTRA="" ;;
-  *) echo "usage: bash scripts/run_experiment.sh <cifar10|cifar100|tiny200> [seeds ...]"; exit 1 ;;
+  *) echo "usage: bash run_experiment.sh <cifar10|cifar100|tiny200> [seeds ...]"; exit 1 ;;
 esac
 
 ARCH="${ARCH:-edgenext_xx_small}"
@@ -34,7 +35,7 @@ out_dir() {
 
 if [ "$DATASET" = "tiny200" ] && [ ! -f "$DATA_ROOT/wnids.txt" ] && [ "${DRY_RUN:-0}" != "1" ]; then
   echo "Tiny-ImageNet-200 not found in $DATA_ROOT (needs wnids.txt, train/ and val/val_annotations.txt)."
-  echo "Run: bash scripts/get_tiny_imagenet.sh   or set DATA_ROOT."
+  echo "Run: bash get_tiny_imagenet.sh   or set DATA_ROOT."
   exit 1
 fi
 mkdir -p "$RUN" "$ART"
